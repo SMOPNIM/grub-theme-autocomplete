@@ -1,0 +1,117 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "GRUB Theme",
+  "scopeName": "source.grub-theme",
+  "fileTypes": ["theme.txt"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#global-property" },
+    { "include": "#component" }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.line.number-sign",
+      "match": "#.*$"
+    },
+    "global-property": {
+      "begin": "^\\s*(title-text|title-font|title-color|desktop-image|desktop-image-scale-method|desktop-image-h-align|desktop-image-v-align|desktop-color|terminal-box|terminal-border|terminal-left|terminal-top|terminal-width|terminal-height)\\s*:",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.global.grub-theme" }
+      },
+      "end": "(?=#|$|\\n)",
+      "patterns": [
+        {
+          "match": "\\s*:",
+          "name": "punctuation.separator.key-value.grub-theme"
+        },
+        { "include": "#value" }
+      ]
+    },
+    "component": {
+      "begin": "(?<=^|\\n)\\s*(\\+)\\s*(label|progress_bar|circular_progress|boot_menu|image|canvas|hbox|vbox)\\s*\\{",
+      "beginCaptures": {
+        "1": { "name": "keyword.control" },
+        "2": { "name": "entity.name.type" }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.brace" }
+      },
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#component" },
+        { "include": "#property-assignment" }
+      ]
+    },
+    "property-assignment": {
+      "begin": "([a-zA-Z][a-zA-Z0-9_]*)\\s*=",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.component.grub-theme" }
+      },
+      "end": "(?=#|$|\\n|\\})",
+      "patterns": [
+        {
+          "match": "\\s*=",
+          "name": "punctuation.separator.key-value.grub-theme"
+        },
+        { "include": "#value" }
+      ]
+    },
+    "value": {
+      "patterns": [
+        { "include": "#string" },
+        { "include": "#number" },
+        { "include": "#boolean" },
+        { "include": "#tuple" },
+        { "include": "#color" }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.grub-theme",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.grub-theme" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.grub-theme" }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.grub-theme",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "boolean": {
+      "name": "constant.language.boolean.grub-theme",
+      "match": "\\b(true|false)\\b"
+    },
+    "number": {
+      "name": "constant.numeric.grub-theme",
+      "match": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    "tuple": {
+      "name": "meta.tuple.grub-theme",
+      "begin": "\\(",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.tuple.begin.grub-theme" }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.tuple.end.grub-theme" }
+      },
+      "patterns": [
+        { "include": "#number" },
+        {
+          "match": ",",
+          "name": "punctuation.separator.tuple.grub-theme"
+        }
+      ]
+    },
+    "color": {
+      "name": "constant.other.color.grub-theme",
+      "match": "(?i)(#[0-9a-f]{3}([0-9a-f]{3})?)|\\b(black|silver|gray|white|maroon|red|purple|fuchsia|green|lime|olive|yellow|navy|blue|teal|aqua|cornflowerblue|aliceblue|antiquewhite|aquamarine|azure|beige|bisque|blanchedalmond|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|gainsboro|ghostwhite|gold|goldenrod|greenyellow|grey|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|limegreen|linen|magenta|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|oldlace|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|rebeccapurple|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|thistle|tomato|turquoise|violet|wheat|whitesmoke|yellowgreen)\\b|\\b\\d{1,3},\\s*\\d{1,3},\\s*\\d{1,3}\\b"
+    }
+  }
+}

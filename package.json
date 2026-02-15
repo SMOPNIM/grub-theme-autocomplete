@@ -1,0 +1,53 @@
+{
+  "name": "grub-theme-autocomplete",
+  "displayName": "GRUB Theme Autocomplete",
+  "description": "Intelligent autocompletion for GRUB theme.txt files",
+  "version": "0.1.0",
+  "publisher": "SMOPNIM",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "activationEvents": [
+    
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "grub-theme",
+        "aliases": [
+          "GRUB Theme",
+          "grub-theme"
+        ],
+        "extensions": [
+          ".theme.txt"
+        ],
+        "filenames": [
+          "theme.txt"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "grub-theme",
+        "scopeName": "source.grub-theme",
+        "path": "./syntaxes/grub-theme.tmGrammar.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.0.0"
+  }
+}
