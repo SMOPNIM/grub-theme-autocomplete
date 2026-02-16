@@ -1,6 +1,6 @@
 # GRUB Theme Autocomplete
 
-这是一个 Visual Studio Code 插件
+这是一个 Visual Studio Code 插件。  
 为 GRUB 的 `theme.txt` 文件提供智能自动补全。
 
 ## 功能
