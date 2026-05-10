@@ -15,8 +15,18 @@ function snippet(label: string, insert: string, detail: string): vscode.Completi
   return item;
 }
 
-function enumMember(label: string): vscode.CompletionItem {
-  return new vscode.CompletionItem(label, vscode.CompletionItemKind.EnumMember);
+function enumMember(label: string, kind?: vscode.CompletionItemKind, quote?: boolean): vscode.CompletionItem {
+  const item = new vscode.CompletionItem(label, kind ?? vscode.CompletionItemKind.EnumMember);
+  if (quote && label) {
+    item.insertText = new vscode.SnippetString(`"${label}"`);
+  }
+  return item;
+}
+
+function stringMember(label: string, detail?: string): vscode.CompletionItem {
+  const item = new vscode.CompletionItem(label, vscode.CompletionItemKind.Text);
+  if (detail) item.detail = detail;
+  return item;
 }
 
 // ==================== 全局属性补全数据 ====================
@@ -130,25 +140,28 @@ const componentAttrMap = new Map<string, vscode.CompletionItem[]>([
 ]);
 
 // ==================== 枚举值补全映射 ====================
-const enumMap: Record<string, string[]> = {
-  'align': ['left', 'center', 'right'],
-  'desktop-image-h-align': ['left', 'center', 'right'],
-  'desktop-image-v-align': ['top', 'center', 'bottom'],
-  'desktop-image-scale-method': ['stretch', 'crop', 'padding', 'fitwidth', 'fitheight'],
-  'scrollbar_slice': ['west', 'center', 'east'],
-  'visible': ['true', 'false'],
-  'highlight_overlay': ['true', 'false'],
-  'scrollbar_thumb_overlay': ['true', 'false'],
-  'ticks_disappear': ['true', 'false'],
-  'id': ['__timeout__'],
-  'text': [
-    '@TIMEOUT_NOTIFICATION_SHORT@',
-    '@TIMEOUT_NOTIFICATION_MIDDLE@',
-    '@TIMEOUT_NOTIFICATION_LONG@',
-    '@KEYMAP_SHORT@',
-    '@KEYMAP_MIDDLE@',
-    '@KEYMAP_LONG@',
-  ],
+const enumMap: Record<string, { values: string[]; kind?: vscode.CompletionItemKind; quote?: boolean }> = {
+  'align': { values: ['left', 'center', 'right'] },
+  'desktop-image-h-align': { values: ['left', 'center', 'right'] },
+  'desktop-image-v-align': { values: ['top', 'center', 'bottom'] },
+  'desktop-image-scale-method': { values: ['stretch', 'crop', 'padding', 'fitwidth', 'fitheight'] },
+  'scrollbar_slice': { values: ['west', 'center', 'east'] },
+  'visible': { values: ['true', 'false'] },
+  'highlight_overlay': { values: ['true', 'false'] },
+  'scrollbar_thumb_overlay': { values: ['true', 'false'] },
+  'ticks_disappear': { values: ['true', 'false'] },
+  'id': { values: ['__timeout__'] },
+  'text': {
+    values: [
+      '@TIMEOUT_NOTIFICATION_SHORT@',
+      '@TIMEOUT_NOTIFICATION_MIDDLE@',
+      '@TIMEOUT_NOTIFICATION_LONG@',
+      '@KEYMAP_SHORT@',
+      '@KEYMAP_MIDDLE@',
+      '@KEYMAP_LONG@',
+    ],
+    quote: true,
+  },
 };
 
 // ==================== 上下文辅助函数 ====================
@@ -205,7 +218,13 @@ export function activate(context: vscode.ExtensionContext) {
         if (isInsideValue(linePrefix)) {
           const attr = extractAttributeName(linePrefix);
           if (attr && enumMap[attr]) {
-            return enumMap[attr].map(v => enumMember(v));
+            const entry = enumMap[attr];
+            if (entry.kind) {
+              return entry.values.map(v => enumMember(v, entry.kind, entry.quote));
+            } else {
+              // 默认使用 EnumMember 类型
+              return entry.values.map(v => enumMember(v, undefined, entry.quote));
+            }
           }
           return [];
         }

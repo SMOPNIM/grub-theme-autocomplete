@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/grub-theme-autocomplete.git"
+    "url": "https://github.com/SMOPNIM/grub-theme-autocomplete.git"
   },
   "categories": [
     "Programming Languages",
     "Snippets"
   ],
   "activationEvents": [
-    
+    "onLanguage:grub-theme"
   ],
   "main": "./out/extension.js",
   "contributes": {
