@@ -90,4 +90,4 @@ npm run watch
 
 ## 许可证
 
-MIT License
+MIT — 详见 [LICENSE](LICENSE)。

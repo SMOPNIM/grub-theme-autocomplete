@@ -4,6 +4,7 @@
   "description": "Intelligent autocompletion for GRUB theme.txt files",
   "version": "0.1.0",
   "publisher": "SMOPNIM",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
