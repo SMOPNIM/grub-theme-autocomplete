@@ -24,6 +24,7 @@
 - `@types/vscode` 固定为 `1.85.0`，与 `engines.vscode` 对齐（原来 `^1.85.0` 实际解析到 1.109.0）。
 - `.vscodeignore` 排除 `test/`、`.github/`、`out/**/*.map`，并去掉无效的 `!out/**`。
 - 新增 GitHub Actions CI（编译 + 测试 + 打包检查）。
+- CI 产物为单个 `.vsix` 文件（`actions/upload-artifact@v7` + `archive: false`），下载后无需解压。
 - README 修正安装步骤（`.vsix` 需自行打包，不在 `out/` 下）、补全触发方式说明，并新增「属性数据说明」。
 
 ## [0.1.0] - 2026-2-13

@@ -43,6 +43,15 @@ npx @vscode/vsce package
 
 > 注意：`.vsix` 不是编译产物，不会出现在 `out/` 目录里，必须先用上面的命令打包。
 
+### 直接下载 CI 构建好的 VSIX
+
+每次 push 都会触发 [CI](.github/workflows/ci.yml)，它会编译、跑单元测试并打包：
+
+1. 打开仓库的 **Actions** 页面 → 选最近一次成功的 **CI** 运行；
+2. 页面底部 **Artifacts** 区域点击 `grub-theme-autocomplete-<版本号>.vsix` —— 下载到的**就是 `.vsix` 文件本身**（不是压缩包），可直接用 `Install from VSIX...` 安装。
+
+> 实现方式：`actions/upload-artifact@v7` 的 `archive: false`（v7 起支持）。v4/v5 没有该参数，产物一定会被套一层 zip。
+
 ## 使用方法
 
 1. 打开任意 `theme.txt` 或 `*.theme.txt` 文件
