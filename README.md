@@ -52,6 +52,14 @@ npx @vscode/vsce package
 
 > 实现方式：`actions/upload-artifact@v7` 的 `archive: false`（v7 起支持）。v4/v5 没有该参数，产物一定会被套一层 zip。
 
+### 从 Releases 下载（长期有效）
+
+打 tag（如 `v0.1.1`）会触发 CI 自动创建 GitHub Release，并把 `.vsix` 作为附件上传：
+
+- 打开 [Releases](https://github.com/SMOPNIM/grub-theme-autocomplete/releases) 页面，下载 `grub-theme-autocomplete-<版本号>.vsix` 直接安装。
+
+Release 附件是原样提供的文件（同样不是压缩包），而且不会像 Actions artifact 那样 90 天后过期。
+
 ## 使用方法
 
 1. 打开任意 `theme.txt` 或 `*.theme.txt` 文件
@@ -125,6 +133,19 @@ npm test
 - `src/data.ts`：属性 / 枚举数据表
 - `src/extension.ts`：补全提供者，把数据表与上下文拼装成 `CompletionItem`
 - `test/`：`node --test` 风格的单元测试
+
+### 发布新版本
+
+1. 更新 `package.json` 的 `version` 与 `CHANGELOG.md`；
+2. 提交并推送；
+3. 打 tag 并推送（**tag 必须与 `package.json` 版本一致**，CI 会校验后才会发版）：
+
+```bash
+git tag v0.1.2
+git push origin v0.1.2
+```
+
+CI 会编译、跑测试、打包，并自动创建对应的 Release，把 `.vsix` 作为附件上传。
 
 ## 许可证
 
