@@ -2,7 +2,7 @@
   "name": "grub-theme-autocomplete",
   "displayName": "GRUB Theme Autocomplete",
   "description": "Intelligent autocompletion for GRUB theme.txt files",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "SMOPNIM",
   "license": "MIT",
   "engines": {
@@ -48,11 +48,12 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node test/context.test.js && node test/data.test.js"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "1.85.0",
     "typescript": "^5.0.0"
   }
 }

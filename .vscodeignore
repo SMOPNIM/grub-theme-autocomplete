@@ -1,6 +1,10 @@
 .vscode/**
+.github/**
 .gitignore
+.npm-cache/**
 node_modules
 src/**
+test/**
 tsconfig.json
-!out/**
+package-lock.json
+out/**/*.map
