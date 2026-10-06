@@ -20,10 +20,13 @@ jobs:
         run: npm test
 
       - name: 打包 VSIX（验证 packaging 配置）
-        run: npx --yes @vscode/vsce package --out dist/
+        # 注意：vsce 的 --out 是**文件**路径而不是目录，写 `--out dist/` 会报
+        # ENOTDIR: not a directory, stat 'dist/'。这里用默认输出名
+        # grub-theme-autocomplete-<版本>.vsix（生成在仓库根目录），与 README 一致。
+        run: npx --yes @vscode/vsce package
 
       - uses: actions/upload-artifact@v4
         with:
           name: vsix
-          path: dist/*.vsix
+          path: "*.vsix"
           if-no-files-found: error
