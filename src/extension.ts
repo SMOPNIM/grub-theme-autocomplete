@@ -43,6 +43,7 @@ const globalProperties = [
   prop('desktop-image-v-align', '背景垂直对齐', 'desktop-image-v-align: $1'),
   prop('desktop-color', '背景颜色', 'desktop-color: $1'),
   prop('terminal-box', '终端样式盒模式', 'terminal-box: "$1"'),
+  prop('terminal-font', '终端字体', 'terminal-font: "$1"'),
   prop('terminal-border', '终端边框宽度', 'terminal-border: $1'),
   prop('terminal-left', '终端左坐标', 'terminal-left: $1'),
   prop('terminal-top', '终端顶坐标', 'terminal-top: $1'),
@@ -64,10 +65,12 @@ const components = [
 
 // ==================== 组件属性补全数据 ====================
 const commonAttrs = [
-  prop('left', '左边距（像素/百分比）', 'left = $1'),
-  prop('top', '上边距（像素/百分比）', 'top = $1'),
-  prop('width', '宽度（像素/百分比）', 'width = $1'),
-  prop('height', '高度（像素/百分比）', 'height = $1'),
+  prop('left', '左边距（像素/百分比，新式布局）', 'left = $1'),
+  prop('top', '上边距（像素/百分比，新式布局）', 'top = $1'),
+  prop('width', '宽度（像素/百分比，新式布局）', 'width = $1'),
+  prop('height', '高度（像素/百分比，新式布局）', 'height = $1'),
+  prop('position', '相对父容器坐标 (x, y)（旧式）', 'position = ($1)'),
+  prop('preferred_size', '首选尺寸 (w, h)，-1 表自动（旧式）', 'preferred_size = ($1)'),
   prop('id', '组件标识符（特殊值 "__timeout__"）', 'id = "$1"'),
   prop('visible', '是否可见', 'visible = $1'),
 ];
@@ -84,11 +87,15 @@ const progressBarAttrs = [
   prop('bg_color', '背景色（纯色渲染）', 'bg_color = $1'),
   prop('border_color', '边框色（纯色渲染）', 'border_color = $1'),
   prop('text_color', '文字颜色', 'text_color = $1'),
+  prop('show_text', '是否在进度条上显示文字', 'show_text = $1'),
   prop('bar_style', '进度条边框样式盒模式', 'bar_style = "$1"'),
   prop('highlight_style', '高亮区域样式盒模式', 'highlight_style = "$1"'),
   prop('highlight_overlay', '高亮覆盖边框', 'highlight_overlay = $1'),
   prop('font', '进度条文字字体', 'font = "$1"'),
   prop('text', '进度条显示文本（支持 @TIMEOUT_* 模板）', 'text = "$1"'),
+  prop('value', '当前值（通常由 GRUB 自动更新）', 'value = $1'),
+  prop('start', '起始值（通常由 GRUB 自动更新）', 'start = $1'),
+  prop('end', '结束值（通常由 GRUB 自动更新）', 'end = $1'),
 ];
 
 const circularProgressAttrs = [
@@ -97,6 +104,9 @@ const circularProgressAttrs = [
   prop('num_ticks', '刻度总数', 'num_ticks = $1'),
   prop('ticks_disappear', '刻度是否逐渐消失', 'ticks_disappear = $1'),
   prop('start_angle', '起始角度（支持 deg 单位）', 'start_angle = $1'),
+  prop('value', '当前值（通常由 GRUB 自动更新）', 'value = $1'),
+  prop('start', '起始值（通常由 GRUB 自动更新）', 'start = $1'),
+  prop('end', '结束值（通常由 GRUB 自动更新）', 'end = $1'),
 ];
 
 const bootMenuAttrs = [
@@ -116,6 +126,8 @@ const bootMenuAttrs = [
   prop('scrollbar', '是否显示滚动条', 'scrollbar = $1'),
   prop('scrollbar_frame', '滚动条轨道样式盒模式', 'scrollbar_frame = "$1"'),
   prop('scrollbar_thumb', '滚动条滑块样式盒模式', 'scrollbar_thumb = "$1"'),
+  prop('scrollbar_width', '滚动条宽度', 'scrollbar_width = $1'),
+  prop('max_items_shown', '最多显示菜单项数', 'max_items_shown = $1'),
   prop('scrollbar_thumb_overlay', '滑块覆盖轨道', 'scrollbar_thumb_overlay = $1'),
   prop('scrollbar_slice', '滚动条放置切片', 'scrollbar_slice = $1'),
   prop('scrollbar_left_pad', '左边距', 'scrollbar_left_pad = $1'),
@@ -147,6 +159,8 @@ const enumMap: Record<string, { values: string[]; kind?: vscode.CompletionItemKi
   'desktop-image-scale-method': { values: ['stretch', 'crop', 'padding', 'fitwidth', 'fitheight'] },
   'scrollbar_slice': { values: ['west', 'center', 'east'] },
   'visible': { values: ['true', 'false'] },
+  'scrollbar': { values: ['true', 'false'] },
+  'show_text': { values: ['true', 'false'] },
   'highlight_overlay': { values: ['true', 'false'] },
   'scrollbar_thumb_overlay': { values: ['true', 'false'] },
   'ticks_disappear': { values: ['true', 'false'] },
@@ -166,45 +180,102 @@ const enumMap: Record<string, { values: string[]; kind?: vscode.CompletionItemKi
 
 // ==================== 上下文辅助函数 ====================
 function isInsideValue(linePrefix: string): boolean {
-  const trimmed = linePrefix.trimEnd();
-  return trimmed.endsWith('=');
+  // 全局用 `:`，组件内用 `=`；光标在行内第一个 =/: 之后即为值区，
+  // 需容忍已输入的值前缀（如 `align = c|`、`desktop-image-scale-method: cr|`）。
+  return /[:=][^=:]*$/.test(linePrefix);
 }
 
 function extractAttributeName(linePrefix: string): string | undefined {
-  const match = linePrefix.match(/(\w+)\s*=\s*$/);
+  const match = linePrefix.match(/([\w-]+)\s*[:=][^=:]*$/);
   return match ? match[1] : undefined;
 }
 
-function isInsideComponent(textBefore: string): boolean {
-  let braceCount = 0;
-  for (let i = 0; i < textBefore.length; i++) {
-    if (textBefore[i] === '{') braceCount++;
-    else if (textBefore[i] === '}') braceCount--;
+// 剥离双引号字符串内容与 # 注释，避免 `"{"` / `# {` 干扰大括号计数。
+// 保留换行符以维持行结构。
+function stripStringsAndComments(text: string): string {
+  let out = '';
+  let inString = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (ch === '\\' && i + 1 < text.length) {
+        out += '  ';
+        i++;
+        continue;
+      }
+      if (ch === '"') {
+        inString = false;
+      }
+      out += ch === '\n' ? '\n' : ' ';
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      out += ' ';
+      continue;
+    }
+    if (ch === '#') {
+      // 行注释：丢弃至行尾
+      while (i < text.length && text[i] !== '\n') {
+        out += ' ';
+        i++;
+      }
+      if (i < text.length) {
+        out += '\n';
+      }
+      continue;
+    }
+    out += ch;
   }
-  return braceCount > 0;
+  return out;
+}
+
+// 从前文正向扫描，维护组件栈，可正确处理嵌套与 `{` 换行场景。
+function getComponentStack(textBefore: string): string[] {
+  const cleaned = stripStringsAndComments(textBefore);
+  const stack: string[] = [];
+  const tokenRe = /\+\s*(\w+)|([{}])/g;
+  let m: RegExpExecArray | null;
+  let pending: string | undefined;
+  while ((m = tokenRe.exec(cleaned)) !== null) {
+    if (m[1] !== undefined) {
+      pending = m[1];
+    } else if (m[2] === '{') {
+      stack.push(pending ?? '__anonymous__');
+      pending = undefined;
+    } else if (m[2] === '}') {
+      if (stack.length > 0) {
+        stack.pop();
+      }
+      pending = undefined;
+    }
+  }
+  return stack;
+}
+
+function isInsideComponent(textBefore: string): boolean {
+  const stack = getComponentStack(textBefore);
+  return stack.length > 0;
 }
 
 function getCurrentComponentType(textBefore: string): string | undefined {
-  const lines = textBefore.split('\n');
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const line = lines[i].trim();
-    if (line.startsWith('+')) {
-      const match = line.match(/^\+\s*(\w+)/);
-      if (match) return match[1];
-    }
+  const stack = getComponentStack(textBefore);
+  const top = stack.length > 0 ? stack[stack.length - 1] : undefined;
+  if (!top || top === '__anonymous__') {
+    return undefined;
   }
-  return undefined;
+  return top;
 }
 
 function cursorAfterPlus(linePrefix: string): boolean {
-  const trimmed = linePrefix.trimEnd();
-  return trimmed.endsWith('+');
+  // 覆盖 `+|`、`+ |`、`+ lab|`（含嵌套缩进）
+  return /^\s*\+\s*\w*\s*$/.test(linePrefix);
 }
 
 // ==================== 激活插件 ====================
 export function activate(context: vscode.ExtensionContext) {
   const provider = vscode.languages.registerCompletionItemProvider(
-    { language: 'grub-theme', scheme: 'file' },
+    { language: 'grub-theme' },
     {
       provideCompletionItems(
         document: vscode.TextDocument,
@@ -214,7 +285,7 @@ export function activate(context: vscode.ExtensionContext) {
         const linePrefix = line.text.slice(0, position.character);
         const textBefore = document.getText(new vscode.Range(new vscode.Position(0, 0), position));
 
-        // 1. 属性值补全（等号后面）
+        // 1. 属性值补全（= 或 : 后面，兼容已输入前缀）
         if (isInsideValue(linePrefix)) {
           const attr = extractAttributeName(linePrefix);
           if (attr && enumMap[attr]) {
@@ -232,13 +303,15 @@ export function activate(context: vscode.ExtensionContext) {
         // 2. 检测光标前是否有 '+'（用户想要输入组件）
         const afterPlus = cursorAfterPlus(linePrefix);
 
-        // 3. 如果光标前有 '+'，返回组件补全项（插入文本带前导空格）
+        // 3. 如果光标前有 '+'，返回组件补全项
         if (afterPlus) {
+          // `+|` 需前导空格，`+ |` / `+ lab|` 已有空格或待替换词则不需要，避免双空格
+          const needsLeadingSpace = linePrefix.trimEnd().endsWith('+');
           return components.map(c => {
             const item = new vscode.CompletionItem(c.label, vscode.CompletionItemKind.Snippet);
             item.detail = c.detail;
-            // 插入文本：空格 + 组件名 + 空格 + { + 换行缩进
-            item.insertText = new vscode.SnippetString(` ${c.label} {\n\t$0\n}`);
+            const prefix = needsLeadingSpace ? ' ' : '';
+            item.insertText = new vscode.SnippetString(`${prefix}${c.label} {\n\t$0\n}`);
             return item;
           });
         }
@@ -257,7 +330,7 @@ export function activate(context: vscode.ExtensionContext) {
         return globalProperties;
       },
     },
-    '+', ':', '=', ' ', '\t'
+    '+', ':', '=', ' ', '\t', '-', '_'
   );
 
   context.subscriptions.push(provider);

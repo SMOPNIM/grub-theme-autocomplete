@@ -14,7 +14,7 @@
       "match": "#.*$"
     },
     "global-property": {
-      "begin": "^\\s*(title-text|title-font|title-color|desktop-image|desktop-image-scale-method|desktop-image-h-align|desktop-image-v-align|desktop-color|terminal-box|terminal-border|terminal-left|terminal-top|terminal-width|terminal-height)\\s*:",
+      "begin": "^\\s*(title-text|title-font|title-color|message-font|message-color|message-bg-color|desktop-image|desktop-image-scale-method|desktop-image-h-align|desktop-image-v-align|desktop-color|terminal-box|terminal-font|terminal-border|terminal-left|terminal-top|terminal-width|terminal-height)\\s*:",
       "beginCaptures": {
         "1": { "name": "entity.other.attribute-name.global.grub-theme" }
       },
