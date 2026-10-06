@@ -11,6 +11,9 @@ dist/
 # 测试临时目录
 .vscode-test/
 
+# npm 缓存（如使用 npm install --cache .npm-cache）
+.npm-cache/
+
 # 日志文件
 npm-debug.log*
 yarn-debug.log*
